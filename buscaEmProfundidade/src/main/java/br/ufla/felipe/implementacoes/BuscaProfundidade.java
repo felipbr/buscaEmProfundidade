@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Stack;
 
 import br.ufla.felipe.entidades.Aresta;
 import br.ufla.felipe.entidades.CorGrafo;
@@ -15,8 +14,6 @@ public class BuscaProfundidade {
 
 	static Vertice todosVertices[];
 	
-    static Stack<Vertice> lista = new Stack<Vertice>();
-    
     static Map<Integer, List<Vertice>> grafosDesconexos = new HashMap<Integer, List<Vertice>>();
     static int contador = 0;
     
@@ -68,7 +65,6 @@ public class BuscaProfundidade {
         
         int children = 0; 
         
-    	lista.push(vertice);
     	vertice.setCor(CorGrafo.CINZA);
     	
     	time += 1;
@@ -76,54 +72,51 @@ public class BuscaProfundidade {
     	vertice.setLow(time);
     	
     	Vertice verticeAdjacente;
-    	while( ! lista.isEmpty()) {
-    		vertice = lista.pop();
+		
+		for(Integer adjacente: vertice.getAdjacentes()) {
 			
-			for(Integer adjacente: vertice.getAdjacentes()) {
-				
-				verticeAdjacente = todosVertices[adjacente];
-				
-    			if( !lista.contains(verticeAdjacente) && verticeAdjacente.getCor().equals(CorGrafo.BRANCO)) {
-    					
-					children++;
+			verticeAdjacente = todosVertices[adjacente];
+			
+			if(verticeAdjacente.getCor().equals(CorGrafo.BRANCO)) {
 					
-					verticeAdjacente.setVerticePai(vertice.getValor());
-					
- 	    			buscaEmProfundidade(verticeAdjacente);
- 	    			
- 	    			vertice.setLow(Math.min(vertice.getLow(), verticeAdjacente.getLow())); 
- 	    			
- 	    			// se o menor vertice encontrado na sub arvore abaixo de v 
- 	    			// e esta antes de u, u-v é uma ponte
- 	                if (verticeAdjacente.getLow() > vertice.getDisc()) {
- 	                    System.out.println(vertice.getValor()+" "+verticeAdjacente.getValor()); 
- 	                	bridges.add(new Aresta(vertice.getValor(),verticeAdjacente.getValor(), true));
- 	                }
- 	                
- 	                // (1) u é root de DFS e tem dois ou mais filhos
- 	                if (vertice.getVerticePai() == -1 && children > 1) {
- 	                    vertice.setArticulationPoint(true); 
- 	                }
- 	                
- 	                // se o vertice não é root e o menor valor de um dos vertices adjacentes e maior ou igual do que o valor descoberto.
- 	                if (vertice.getVerticePai() != -1 && verticeAdjacente.getLow() >= vertice.getDisc()) {
- 	                	vertice.setArticulationPoint(true); 
- 	                }
-    			}
-    			// Atualiza o menor valor de u para chamadas do valor pai
-                else if (verticeAdjacente.getValor() != vertice.getVerticePai()) {
-                    vertice.setLow(Math.min(vertice.getLow(), verticeAdjacente.getDisc()));
+				children++;
+				
+				verticeAdjacente.setVerticePai(vertice.getValor());
+				
+    			buscaEmProfundidade(verticeAdjacente);
+    			
+    			vertice.setLow(Math.min(vertice.getLow(), verticeAdjacente.getLow())); 
+    			
+    			// se o menor vertice encontrado na sub arvore abaixo de v 
+    			// e esta antes de u, u-v é uma ponte
+                if (verticeAdjacente.getLow() > vertice.getDisc()) {
+                    System.out.println(vertice.getValor()+" "+verticeAdjacente.getValor()); 
+                	bridges.add(new Aresta(vertice.getValor(),verticeAdjacente.getValor(), true));
+                }
+                
+                // (1) u é root de DFS e tem dois ou mais filhos
+                if (vertice.getVerticePai() == -1 && children > 1) {
+                    vertice.setArticulationPoint(true); 
+                }
+                
+                // se o vertice não é root e o menor valor de um dos vertices adjacentes e maior ou igual do que o valor descoberto.
+                if (vertice.getVerticePai() != -1 && verticeAdjacente.getLow() >= vertice.getDisc()) {
+                	vertice.setArticulationPoint(true); 
                 }
 			}
-			vertice.setCor(CorGrafo.PRETO);
-    		
-    		List<Vertice> graph = grafosDesconexos.get(contador);
-    		if(graph == null) {
-    			graph = new ArrayList<Vertice>();
-    		}
-    		graph.add(vertice);
-    		grafosDesconexos.put(contador, graph);
+			// Atualiza o menor valor de u para chamadas do valor pai
+            else if (verticeAdjacente.getValor() != vertice.getVerticePai()) {
+                vertice.setLow(Math.min(vertice.getLow(), verticeAdjacente.getDisc()));
+            }
 		}
+		vertice.setCor(CorGrafo.PRETO);
+		
+		List<Vertice> graph = grafosDesconexos.get(contador);
+		if(graph == null) {
+			graph = new ArrayList<Vertice>();
+		}
+		graph.add(vertice);
+		grafosDesconexos.put(contador, graph);
     	
     }
 
